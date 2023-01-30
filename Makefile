@@ -1,6 +1,6 @@
 CXX = clang++
 SDL_LIB = -lSDL2 -Wl
-CXXFLAGS = -Wall -c -std=c++17
+CXXFLAGS = -Wall -Werror -Wextra -c -std=c++17
 LDFLAGS = $(SDL_LIB)
 EXE = SDL_Intro
 

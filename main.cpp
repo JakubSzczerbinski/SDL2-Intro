@@ -18,4 +18,5 @@ int main() {
   SDL_Delay(5 * 1000);
   SDL_DestroyWindow(win);
   SDL_Quit();
+  return 0;
 }
