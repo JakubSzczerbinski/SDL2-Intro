@@ -13,11 +13,32 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y)
 	SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
 	SDL_RenderCopy(ren, tex, NULL, &dst);
 }
+
+void logSDLError( const std::string &msg){
+	std::cerr << msg << " error: " << SDL_GetError() << std::endl;
+}
+
+SDL_Texture* loadTexture(SDL_Renderer* ren, const std::string &file){
+	SDL_Texture *texture = nullptr;
+	SDL_Surface *loadedImage = SDL_LoadBMP(file.c_str());
+	if (loadedImage != nullptr){
+		texture = SDL_CreateTextureFromSurface(ren, loadedImage);
+		SDL_FreeSurface(loadedImage);
+		if (texture == nullptr){
+			logSDLError("CreateTextureFromSurface");
+		}
+	}
+	else {
+		logSDLError("LoadBMP");
+	}
+	return texture;
+}
+
 int main()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+		logSDLError("Error init");
 		return 1;
 	}
 
@@ -25,7 +46,7 @@ int main()
 
 	if (win == nullptr)
 	{
-		std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl; // binarny or
+		logSDLError("Error SDL_CreateWindow");
 		SDL_Quit();
 		return 1;
 	}
@@ -33,7 +54,7 @@ int main()
 	if (ren == nullptr)
 	{
 		SDL_DestroyWindow(win);
-		std::cout << "logSDLError: " << SDL_GetError() << std::endl;
+		logSDLError("logSDLError");
 		SDL_Quit();
 		return 1;
 	}
@@ -42,32 +63,14 @@ int main()
 	SDL_Surface *image = SDL_LoadBMP(image_path);
 	if (!image)
 	{
-		printf("Failed to load image at %s: %s\n", image_path, SDL_GetError());
+		logSDLError("Error image");
 		return 0;
 	}
 	SDL_FreeSurface(image);
 
-	SDL_Texture *loadTexture = SDL_CreateTextureFromSurface(ren, SDL_LoadBMP(image_path));
-	SDL_FreeSurface(NULL);
-	if (loadTexture == nullptr)
-	{
-		SDL_DestroyRenderer(ren);
-		SDL_DestroyWindow(win);
-		std::cout << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
-		SDL_Quit();
-		return 1;
-	}
+    SDL_Texture *background = loadTexture(ren, "resources/water.bmp");
+    SDL_Texture *imagelol = loadTexture(ren, "resources/zolw.bmp");
 
-	SDL_Texture *tex_2 = SDL_CreateTextureFromSurface(ren, SDL_LoadBMP("resources/zolw.bmp"));
-	SDL_FreeSurface(NULL);
-	if (tex_2 == nullptr)
-	{
-		SDL_DestroyRenderer(ren);
-		SDL_DestroyWindow(win);
-		std::cout << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
-		SDL_Quit();
-		return 1;
-	}
 
 	SDL_Rect mniejszy_zolw;
 	mniejszy_zolw.x = 200;
@@ -80,13 +83,13 @@ int main()
 	for (int i = 0; i < 3; ++i)
 	{
 		SDL_RenderClear(ren);
-		SDL_RenderCopy(ren, loadTexture, NULL, NULL);
-		SDL_RenderCopy(ren, tex_2, NULL, wskaznik_do_mniejszy_zolw); //&mniejszy_zolw
+		SDL_RenderCopy(ren, background, NULL, NULL);
+		SDL_RenderCopy(ren, imagelol, NULL, wskaznik_do_mniejszy_zolw); //&mniejszy_zolw
 		SDL_RenderPresent(ren);
 		SDL_Delay(1000);
 	}
-	SDL_DestroyTexture(loadTexture);
-	SDL_DestroyTexture(tex_2);
+	SDL_DestroyTexture(background);
+	SDL_DestroyTexture(imagelol);
 	SDL_DestroyRenderer(ren);
 	SDL_DestroyWindow(win);
 	SDL_Quit();
